@@ -1,0 +1,1 @@
+{"id": "problem1", "title": "Hello World", "difficulty": "easy", "description": "编写一个 C++ 程序，输出 \"Hello, World!\"", "testCases": [{"input": "", "output": "Hello, World!"}]}

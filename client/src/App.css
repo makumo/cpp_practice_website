@@ -1,0 +1,12 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.font-monospace {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}

@@ -1,0 +1,1 @@
+{"id": "problem3", "title": "判断奇偶数", "difficulty": "easy", "description": "输入一个整数，判断它是奇数还是偶数。如果是偶数输出\"Even\"，如果是奇数输出\"Odd\"", "testCases": [{"input": "2", "output": "Even"}, {"input": "3", "output": "Odd"}, {"input": "0", "output": "Even"}]}

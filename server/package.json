@@ -1,0 +1,1 @@
+{"name": "cpp-practice-server", "version": "1.0.0", "description": "C++在线编程练习网站后端", "main": "app.js", "scripts": {"start": "node app.js", "dev": "nodemon app.js"}, "dependencies": {"express": "^4.18.2", "cors": "^2.8.5", "body-parser": "^1.20.2"}, "devDependencies": {"nodemon": "^3.0.2"}}
