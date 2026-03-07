@@ -8,8 +8,8 @@ const { exec } = require('child_process');
 const app = express();
 const PORT = 3001;
 
-// C++ 编译器路径
-const GPP_PATH = 'D:\\Work\\work-dll\\msys64\\ucrt64\\bin\\g++.exe';
+// C++ 编译器路径 - 支持环境变量配置或直接调用 g++
+const GPP_PATH = process.env.GPP_PATH || 'g++';
 
 // 中间件
 app.use(cors());

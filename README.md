@@ -81,12 +81,19 @@ cd ../client && npm install # 安装前端依赖
 
 3. 配置 C++ 编译器路径
 
-编辑 `server/app.js` 文件，修改编译器路径：
-```javascript
-const GPP_PATH = 'D:\\path\\to\\g++.exe'; // 修改为你的 g++ 路径
+项目支持两种配置方式：
+
+**方式 1: 环境变量配置（推荐）**
+设置环境变量 `GPP_PATH` 指向你的 g++ 编译器路径：
+```bash
+# Windows PowerShell
+$env:GPP_PATH = "D:\\path\\to\\g++.exe"
+
+# 或在系统环境变量中永久设置
 ```
 
-或确保 g++ 已添加到系统 PATH 环境变量中。
+**方式 2: 使用系统 PATH**
+确保 g++ 已添加到系统 PATH 环境变量中，项目会直接调用 `g++` 命令。
 
 ### 运行项目
 
