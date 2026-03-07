@@ -1,1 +1,1 @@
-{"id": "problem2", "title": "两数之和", "difficulty": "easy", "description": "输入两个整数，输出它们的和", "testCases": [{"input": "3 5", "output": "8"}, {"input": "10 20", "output": "30"}, {"input": "-5 3", "output": "-2"}]}
+{"id": "problem2", "title": "两数之和", "difficulty": "easy", "description": "输入两个整数，输出它们的和", "testCases": [{"input": "3 5", "output": "8"}, {"input": "10 20", "output": "30"}, {"input": "-5 3", "output": "-2"}], "referenceSolution": "#include <iostream>\n\nint main() {\n    int a, b;\n    std::cin >> a >> b;\n    std::cout << a + b << std::endl;\n    return 0;\n}"}

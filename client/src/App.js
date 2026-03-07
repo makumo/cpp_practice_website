@@ -9,6 +9,7 @@ function App() {
   const [code, setCode] = useState('');
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showReference, setShowReference] = useState(false);
 
   useEffect(() => {
     loadProblems();
@@ -109,8 +110,16 @@ function App() {
 
               <div className="col-md-6">
                 <div className="card mb-3">
-                  <div className="card-header bg-light">
+                  <div className="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 className="mb-0">代码编辑器</h5>
+                    {selectedProblem?.referenceSolution && (
+                      <button
+                        className="btn btn-sm btn-info"
+                        onClick={() => setShowReference(!showReference)}
+                      >
+                        {showReference ? '隐藏参考答案' : '查看参考答案'}
+                      </button>
+                    )}
                   </div>
                   <div className="card-body">
                     <textarea
@@ -130,6 +139,25 @@ function App() {
                     </button>
                   </div>
                 </div>
+
+                {showReference && selectedProblem?.referenceSolution && (
+                  <div className="card mb-3">
+                    <div className="card-header bg-info text-white">
+                      <h5 className="mb-0">参考答案</h5>
+                    </div>
+                    <div className="card-body">
+                      <pre className="mb-0" style={{ fontFamily: 'monospace', fontSize: '14px' }}>
+                        <code>{selectedProblem.referenceSolution}</code>
+                      </pre>
+                      <button
+                        className="btn btn-sm btn-secondary mt-2"
+                        onClick={() => setCode(selectedProblem.referenceSolution)}
+                      >
+                        使用参考答案
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {results && (
                   <div className="card">
