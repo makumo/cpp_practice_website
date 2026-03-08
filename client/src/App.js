@@ -10,17 +10,57 @@ function App() {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showReference, setShowReference] = useState(false);
+  
+  // 新增状态
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [problemsPerPage] = useState(10);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // 格式化题目 ID 为 4 位数字
+  const formatProblemId = (id) => {
+    const num = parseInt(id.replace('problem', ''));
+    return 'problem' + String(num).padStart(4, '0');
+  };
 
   useEffect(() => {
     loadProblems();
   }, []);
 
+  // 筛选题目
+  const filteredProblems = problems.filter(problem => {
+    const matchesSearch = searchTerm === '' || 
+      problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      problem.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDifficulty = selectedDifficulty === 'all' || 
+      problem.difficulty === selectedDifficulty;
+    return matchesSearch && matchesDifficulty;
+  });
+
+  // 分页
+  const totalPages = Math.ceil(filteredProblems.length / problemsPerPage);
+  const startIndex = (currentPage - 1) * problemsPerPage;
+  const endIndex = startIndex + problemsPerPage;
+  const displayedProblems = filteredProblems.slice(startIndex, endIndex);
+
+  // 切换页码
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
   const loadProblems = async () => {
     try {
       const response = await axios.get('http://localhost:3001/api/problems');
-      setProblems(response.data);
-      if (response.data.length > 0) {
-        loadProblemDetail(response.data[0].id);
+      // 按题目编号排序
+      const sortedProblems = response.data.sort((a, b) => {
+        const numA = parseInt(a.id.replace('problem', ''));
+        const numB = parseInt(b.id.replace('problem', ''));
+        return numA - numB;
+      });
+      setProblems(sortedProblems);
+      if (sortedProblems.length > 0) {
+        loadProblemDetail(sortedProblems[0].id);
       }
     } catch (error) {
       console.error('加载题目失败:', error);
@@ -65,31 +105,125 @@ function App() {
       </nav>
 
       <div className="row">
-        <div className="col-md-3">
+        <div className={`col-md-${sidebarCollapsed ? '1' : '3'}`}>
           <div className="card">
-            <div className="card-header bg-light">
-              <h5 className="mb-0">题目列表</h5>
+            <div className="card-header bg-light d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">{sidebarCollapsed ? '题目' : '题目列表'}</h5>
+              <button 
+                className="btn btn-sm btn-outline-secondary" 
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              >
+                {sidebarCollapsed ? '→' : '←'}
+              </button>
             </div>
-            <div className="list-group list-group-flush">
-              {problems.map(problem => (
-                <button
-                  key={problem.id}
-                  className={`list-group-item list-group-item-action ${selectedProblem?.id === problem.id ? 'active' : ''}`}
-                  onClick={() => loadProblemDetail(problem.id)}
-                >
-                  <div className="d-flex justify-content-between align-items-center">
-                    <span>{problem.id}. {problem.title}</span>
-                    <span className={`badge bg-${problem.difficulty === 'easy' ? 'success' : problem.difficulty === 'medium' ? 'warning' : 'danger'}`}>
-                      {problem.difficulty}
-                    </span>
+            <div className="card-body">
+              {!sidebarCollapsed && (
+                <>
+                  {/* 搜索框 */}
+                  <div className="mb-3">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="搜索题目..."
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                    />
                   </div>
-                </button>
-              ))}
+                  
+                  {/* 难度筛选 */}
+                  <div className="mb-3">
+                    <div className="btn-group w-100" role="group">
+                      <button
+                        className={`btn btn-sm ${selectedDifficulty === 'all' ? 'btn-primary' : 'btn-outline-primary'}`}
+                        onClick={() => {
+                          setSelectedDifficulty('all');
+                          setCurrentPage(1);
+                        }}
+                      >
+                        全部
+                      </button>
+                      <button
+                        className={`btn btn-sm ${selectedDifficulty === 'easy' ? 'btn-success' : 'btn-outline-success'}`}
+                        onClick={() => {
+                          setSelectedDifficulty('easy');
+                          setCurrentPage(1);
+                        }}
+                      >
+                        Easy
+                      </button>
+                      <button
+                        className={`btn btn-sm ${selectedDifficulty === 'medium' ? 'btn-warning' : 'btn-outline-warning'}`}
+                        onClick={() => {
+                          setSelectedDifficulty('medium');
+                          setCurrentPage(1);
+                        }}
+                      >
+                        Medium
+                      </button>
+                      <button
+                        className={`btn btn-sm ${selectedDifficulty === 'hard' ? 'btn-danger' : 'btn-outline-danger'}`}
+                        onClick={() => {
+                          setSelectedDifficulty('hard');
+                          setCurrentPage(1);
+                        }}
+                      >
+                        Hard
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+              
+              {/* 题目列表 */}
+              <div className="list-group list-group-flush" style={{ maxHeight: sidebarCollapsed ? '70vh' : '60vh', overflowY: 'auto' }}>
+                {displayedProblems.map(problem => (
+                  <button
+                    key={problem.id}
+                    className={`list-group-item list-group-item-action ${selectedProblem?.id === problem.id ? 'active' : ''}`}
+                    onClick={() => loadProblemDetail(problem.id)}
+                  >
+                    <div className="d-flex justify-content-between align-items-center">
+                      <span>{sidebarCollapsed ? formatProblemId(problem.id).replace('problem', '') : formatProblemId(problem.id) + '. ' + problem.title}</span>
+                      <span className={`badge bg-${problem.difficulty === 'easy' ? 'success' : problem.difficulty === 'medium' ? 'warning' : 'danger'}`}>
+                        {problem.difficulty}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              
+              {/* 分页 */}
+              {!sidebarCollapsed && totalPages > 1 && (
+                <div className="mt-3">
+                  <div className="btn-group w-100" role="group">
+                    <button
+                      className="btn btn-sm btn-outline-secondary"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      上一页
+                    </button>
+                    <span className="btn btn-sm btn-outline-secondary disabled">
+                      {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      className="btn btn-sm btn-outline-secondary"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      下一页
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="col-md-9">
+        <div className={`col-md-${sidebarCollapsed ? '11' : '9'}`}>
           {selectedProblem && (
             <div className="row">
               <div className="col-md-6">
