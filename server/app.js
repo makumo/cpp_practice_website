@@ -95,7 +95,7 @@ app.post('/api/submit', (req, res) => {
 
         // 编译
         console.log('开始编译:', `${GPP_PATH} "${sourceFile}" -o "${executableFile}"`);
-        exec(`${GPP_PATH} "${sourceFile}" -o "${executableFile}" -static -static-libgcc -static-libstdc++`, (compileError, compileStdout, compileStderr) => {
+        exec(`${GPP_PATH} "${sourceFile}" -o "${executableFile}"`, (compileError, compileStdout, compileStderr) => {
             console.log('编译结果:', { error: compileError, stdout: compileStdout, stderr: compileStderr });
             if (compileError) {
                 // 清理临时文件
@@ -119,9 +119,25 @@ app.post('/api/submit', (req, res) => {
                     
                     try {
                         const output = await new Promise((resolve, reject) => {
-                            exec(`"${executableFile}"`, { input: testCase.input, timeout: 5000 }, (error, stdout, stderr) => {
+                            // 创建临时输入文件
+                            const inputFile = path.join(path.dirname(executableFile), `input_${Date.now()}.txt`);
+                            fs.writeFileSync(inputFile, testCase.input);
+                            
+                            // 使用 PowerShell 运行程序，从文件读取输入
+                            exec(`powershell -Command "Get-Content '${inputFile}' | & '${executableFile}'"`, { timeout: 5000 }, (error, stdout, stderr) => {
+                                // 删除临时输入文件
+                                try {
+                                    fs.unlinkSync(inputFile);
+                                } catch (e) {
+                                    // 忽略删除错误
+                                }
+                                
                                 if (error) {
                                     console.log('运行错误:', error);
+                                    console.log('错误代码:', error.code);
+                                    console.log('错误信号:', error.signal);
+                                    console.log('stderr:', stderr);
+                                    console.log('stdout:', stdout);
                                     reject(error);
                                 } else {
                                     console.log('运行输出:', stdout.trim());
