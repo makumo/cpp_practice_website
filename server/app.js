@@ -123,8 +123,10 @@ app.post('/api/submit', (req, res) => {
                             const inputFile = path.join(path.dirname(executableFile), `input_${Date.now()}.txt`);
                             fs.writeFileSync(inputFile, testCase.input);
                             
-                            // 使用 PowerShell 运行程序，从文件读取输入
-                            exec(`powershell -Command "Get-Content '${inputFile}' | & '${executableFile}'"`, { timeout: 5000 }, (error, stdout, stderr) => {
+                            // [环境兼容性标记] 当前调试环境为 Windows，使用 cmd.exe 的输入重定向方式运行程序
+                            // 注意：部署到 Linux 生产环境时，需要调整为使用 shell 命令，例如：
+                            // exec(`"${executableFile}" < "${inputFile}"`, { shell: '/bin/bash', ... })
+                            exec(`cmd /c "${executableFile}" < "${inputFile}"`, { timeout: 5000 }, (error, stdout, stderr) => {
                                 // 删除临时输入文件
                                 try {
                                     fs.unlinkSync(inputFile);

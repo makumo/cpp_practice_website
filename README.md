@@ -223,6 +223,71 @@ Content-Type: application/json
 2. 确保编译器路径正确且可执行
 3. 测试编译命令是否正常工作
 
+## 环境兼容性说明
+
+### ⚠️ 重要：跨平台部署注意事项
+
+本项目当前开发环境为 **Windows**，代码执行部分使用了 Windows 特定的命令。在部署到 **Linux** 生产环境时，需要进行以下调整：
+
+#### 1. 代码输入重定向方式
+
+**Windows 开发环境（当前）**:
+```javascript
+// server/app.js 第 130 行附近
+exec(`cmd /c "${executableFile}" < "${inputFile}"`, { timeout: 5000 }, ...)
+```
+
+**Linux 生产环境（需要调整为）**:
+```javascript
+exec(`"${executableFile}" < "${inputFile}"`, { 
+  shell: '/bin/bash',
+  timeout: 5000 
+}, ...)
+```
+
+#### 2. 文件路径处理
+
+- Windows 使用反斜杠 `\` 作为路径分隔符
+- Linux 使用正斜杠 `/` 作为路径分隔符
+- 建议使用 Node.js 的 `path.join()` 或 `path.resolve()` 来处理路径，以确保跨平台兼容性
+
+#### 3. 临时文件目录
+
+- Windows: `C:\Users\<username>\AppData\Local\Temp`
+- Linux: `/tmp`
+
+项目已使用 `os.tmpdir()` 获取系统临时目录，无需额外修改。
+
+#### 4. 环境变量设置
+
+**Windows**:
+```powershell
+$env:GPP_PATH = "C:\\path\\to\\g++.exe"
+```
+
+**Linux**:
+```bash
+export GPP_PATH="/usr/bin/g++"
+```
+
+#### 5. 编译器二进制文件
+
+- Windows: `g++.exe`
+- Linux: `g++`
+
+建议通过 `GPP_PATH` 环境变量指定完整的编译器路径。
+
+### 部署前检查清单
+
+在部署到 Linux 生产环境前，请确认：
+
+- [ ] 修改 `server/app.js` 中的 `exec()` 命令，移除 `cmd /c` 并添加 `shell: '/bin/bash'`
+- [ ] 检查所有文件路径是否使用 `path.join()` 处理
+- [ ] 确认 `GPP_PATH` 环境变量指向正确的 Linux 编译器路径
+- [ ] 测试编译和运行功能是否正常
+- [ ] 验证临时文件是否正确创建和清理
+- [ ] 检查文件权限（确保有读写临时目录的权限）
+
 ## 安全注意事项
 
 - 代码执行设置了 5 秒超时限制
